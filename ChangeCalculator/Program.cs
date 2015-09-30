@@ -9,17 +9,24 @@ namespace ChangeCalculator
 {
     class Program
     {
-        static decimal itemCost, amountGiven, change, numQuarters, numDimes, numNickels, numPennies;
-        static decimal quarterVal = (decimal).25;
-        static decimal dimeVal = (decimal).10;
-        static decimal nickelVal = (decimal).05;
-        static decimal pennyVal = (decimal).01;
-
+        static decimal itemCost, amountGiven, change, numQuarters, 
+                                    numDimes, numNickels, numPennies;
+        // coinInfo array corresponds to quarters, dimes, nickels, pennies
+        //  first set holds the number of that coin type
+        //  second set holds the coin value
+        static decimal[,] coinInfo =
+            { {0, 0, 0, 0, 0, 0, 0, 0 } , 
+              {20.0M, 10.0M, 5.0M, 1.0M, .25M, .10M, .05M, .01M } };
+        static int coinInfoIndexNum = 0, coinInfoIndexVal = 1;
+        // array of coin type labels
+        static string[] coinTypeLabels =
+            {"Dollars ($20): ", "Dollars ($10): ", "Dollars ($5): ", "Dollars ($1): ",
+             "Quarters: ", "Dimes: ", "Nickels: ", "Pennies: "};
+ 
         static void Main(string[] args)
         {
             try
             {
-
                 Console.WriteLine("Welcome to ChangeCalc Version 1.0!");
 
                 // Get the input amounts
@@ -71,18 +78,16 @@ namespace ChangeCalculator
             change =  amountGiven - itemCost;
             decimal changeLeft = change;
 
-            // Calculate nnumber of quarters needed 
-            calcCoin(quarterVal, out numQuarters, ref changeLeft);
+            // For each coin type, calculate the number of coins needed:
+            //  it is the change left divided by coin value, rounded down to nearest integer
+            for (int i = 0; i < coinInfo.GetLength(1); i++)
+            {
+                coinInfo[coinInfoIndexNum, i] =
+                   Decimal.Floor(changeLeft / coinInfo[coinInfoIndexVal, i]);
+                // Update the change left to give
+                changeLeft = changeLeft % coinInfo[coinInfoIndexVal, i];
+            }
 
-            // Calculate nnumber of dimes needed 
-            calcCoin(dimeVal, out numDimes, ref changeLeft);
-
-            // Calculate nnumber of nickels needed 
-            calcCoin(nickelVal, out numNickels, ref changeLeft);
-
-            // Number of pennies needed is the change that is left
-            //  after giving the quarters, dimes, and nickels
-            numPennies = changeLeft / pennyVal;
 
         }
         // Calculate the number of the specified coin in the change,
@@ -102,11 +107,14 @@ namespace ChangeCalculator
         {
             Console.WriteLine("---------------------------------------------------------------");
             Console.WriteLine("The customer's change is: ${0}, given as follows:", change);
-            Console.WriteLine("Quarters: {0}", numQuarters);
-            Console.WriteLine("Dimes: {0}", numDimes);
-            Console.WriteLine("Nickels: {0}", numNickels);
-            Console.WriteLine("Pennies: {0}", numPennies);
-        }
+
+            for (int i = 0; i < coinTypeLabels.Length; i++)
+            {
+                Console.WriteLine(coinTypeLabels[i] + 
+                    coinInfo[coinInfoIndexNum, i]);
+            }
+
+       }
 
         // Read in currency amount, allowing up to 2 decimal places
         static decimal inputMoney (string message)
@@ -124,9 +132,7 @@ namespace ChangeCalculator
                 else
                 {
                     Console.WriteLine("Please enter a number with no more than 2 decimal places.");
-                }
-                    
-
+                }                    
             }
 
         }
